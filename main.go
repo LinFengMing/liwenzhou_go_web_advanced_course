@@ -1,50 +1,37 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"net/http"
+	"time"
 
-	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func func1(c *gin.Context) {
-	fmt.Println("func1")
-}
+var db *sql.DB
 
-func func2(c *gin.Context) {
-	fmt.Println("func2 before")
-	c.Next()
-	fmt.Println("func2 after")
-}
-
-func func3(c *gin.Context) {
-	fmt.Println("func3")
-	// c.Abort()
-}
-
-func func4(c *gin.Context) {
-	fmt.Println("func4")
-	c.Set("name", "jiro")
-}
-
-func func5(c *gin.Context) {
-	fmt.Println("func5")
-	value, ok := c.Get("name")
-	if ok {
-		valueStr := value.(string) // 型別轉換
-		fmt.Println(valueStr)
+func initMySQL() (err error) {
+	dsn := "root:1qaz2wsx3edc@tcp(127.0.0.1:3306)/liwenzhou_go_web_advanced_course"
+	db, err = sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err)
 	}
+	err = db.Ping()
+	if err != nil {
+		fmt.Printf("connect to db failed, err:%v\n", err)
+		return
+	}
+	db.SetConnMaxLifetime(time.Second * 10)
+	db.SetMaxOpenConns(200) // 最大連接數
+	db.SetMaxIdleConns(10)  // 最大閒置連接數
+	return
 }
 
 func main() {
-	r := gin.Default()
-	r.GET("/hello", func(c *gin.Context) {
-		c.String(http.StatusOK, "ok")
-	})
-	shopGroup := r.Group("/shop", func1, func2)
-	shopGroup.Use(func3)
-	{
-		shopGroup.GET("/index", func4, func5)
+	if err := initMySQL(); err != nil {
+		fmt.Printf("init mysql failed, err:%v\n", err)
 	}
-	r.Run()
+	// 做完錯誤檢查之後，確保 db 不為 nil，才能執行 defer db.Close()
+	defer db.Close() // 注意这行程式碼要寫在上面 err 判断的下面
+	fmt.Println("connect to db success")
 }
