@@ -33,48 +33,54 @@ type user struct {
 	name string
 }
 
-// 預處理查詢範例
-func prepareQueryDemo() {
-	sqlStr := "select id, name, age from user where id > ?"
-	stmt, err := db.Prepare(sqlStr)
+// 事務操作範例
+func transactionDemo() {
+	tx, err := db.Begin() // 開啟事務
 	if err != nil {
-		fmt.Printf("prepare failed, err:%v\n", err)
+		if tx != nil {
+			tx.Rollback() // 回滾
+		}
+		fmt.Printf("begin trans failed, err:%v\n", err)
 		return
 	}
-	defer stmt.Close()
-	rows, err := stmt.Query(0)
+	sqlStr1 := "Update user set age=30 where id=?"
+	ret1, err := tx.Exec(sqlStr1, 2)
 	if err != nil {
-		fmt.Printf("query failed, err:%v\n", err)
+		tx.Rollback() // 回滾
+		fmt.Printf("exec sql1 failed, err:%v\n", err)
 		return
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var u user
-		rows.Scan(&u.id, &u.name, &u.age)
-		fmt.Printf("u:%#v\n", u)
-	}
-}
+	affRow1, err := ret1.RowsAffected() // 操作影響的行數
+	if err != nil {
+		tx.Rollback() // 回滾
+		fmt.Printf("exec ret1.RowsAffected() failed, err:%v\n", err)
+		return
 
-// 預處理新增範例
-func prepareInsertDemo() {
-	sqlStr := "insert into user(name, age) values (?, ?)"
-	stmt, err := db.Prepare(sqlStr)
+	}
+	sqlStr2 := "Update user set age=40 where id=?"
+	ret2, err := tx.Exec(sqlStr2, 3)
 	if err != nil {
-		fmt.Printf("prepare failed, err:%v\n", err)
+		tx.Rollback() // 回滾
+		fmt.Printf("exec sql2 failed, err:%v\n", err)
 		return
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec("mary", 18)
+	affRow2, err := ret2.RowsAffected() // 操作影響的行數
 	if err != nil {
-		fmt.Printf("insert failed, err:%v\n", err)
+		tx.Rollback() // 回滾
+		fmt.Printf("exec ret2.RowsAffected() failed, err:%v\n", err)
 		return
+
 	}
-	_, err = stmt.Exec("jhon", 18)
-	if err != nil {
-		fmt.Printf("insert failed, err:%v\n", err)
-		return
+	// 當 affRow1 == 1 && affRow2 == 1 才提交事務
+	fmt.Println(affRow1, affRow2)
+	if affRow1 == 1 && affRow2 == 1 {
+		fmt.Println("commit")
+		tx.Commit() // 提交事務
+	} else {
+		tx.Rollback() // 回滾
+		fmt.Println("affRow1 != 1 || affRow2 != 1, rollback")
 	}
-	fmt.Println("insert success.")
+	fmt.Println("exec trans success")
 }
 
 func main() {
@@ -84,6 +90,5 @@ func main() {
 	// 做完錯誤檢查之後，確保 db 不為 nil，才能執行 defer db.Close()
 	defer db.Close() // 注意这行程式碼要寫在上面 err 判断的下面
 	fmt.Println("connect to db success")
-	prepareInsertDemo()
-	prepareQueryDemo()
+	transactionDemo()
 }
