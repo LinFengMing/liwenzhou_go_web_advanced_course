@@ -33,89 +33,48 @@ type user struct {
 	name string
 }
 
-// 查詢單筆資料範例
-func queryRowDemi() {
-	sqlStr := "select id, name, age from user where id=?"
-	var u user
-	// 確保 QueryRow 之後使用 Scan 方法，否則持有的資料庫連接不會被釋放
-	err := db.QueryRow(sqlStr, 1).Scan(&u.id, &u.name, &u.age)
+// 預處理查詢範例
+func prepareQueryDemo() {
+	sqlStr := "select id, name, age from user where id > ?"
+	stmt, err := db.Prepare(sqlStr)
 	if err != nil {
-		fmt.Printf("scan failed, err:%v\n", err)
+		fmt.Printf("prepare failed, err:%v\n", err)
 		return
 	}
-	fmt.Printf("id:%d name:%s age:%d\n", u.id, u.name, u.age)
-}
-
-// 查詢多筆資料範例
-func queryMultiRowDemo() {
-	sqlStr := "select id, name, age from user where id > ?"
-	rows, err := db.Query(sqlStr, 0)
+	defer stmt.Close()
+	rows, err := stmt.Query(0)
 	if err != nil {
 		fmt.Printf("query failed, err:%v\n", err)
 		return
 	}
-	// 非常重要：關閉 rows 連接
 	defer rows.Close()
-	// 循環讀取結果集中的資料
 	for rows.Next() {
 		var u user
-		err := rows.Scan(&u.id, &u.name, &u.age)
-		if err != nil {
-			fmt.Printf("scan failed, err:%v\n", err)
-			return
-		}
-		fmt.Printf("id:%d name:%s age:%d\n", u.id, u.name, u.age)
+		rows.Scan(&u.id, &u.name, &u.age)
+		fmt.Printf("u:%#v\n", u)
 	}
 }
 
-// 新增資料範例
-func insertRowDemo() {
+// 預處理新增範例
+func prepareInsertDemo() {
 	sqlStr := "insert into user(name, age) values (?, ?)"
-	ret, err := db.Exec(sqlStr, "ling", 31)
+	stmt, err := db.Prepare(sqlStr)
+	if err != nil {
+		fmt.Printf("prepare failed, err:%v\n", err)
+		return
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec("mary", 18)
 	if err != nil {
 		fmt.Printf("insert failed, err:%v\n", err)
 		return
 	}
-	theID, err := ret.LastInsertId() // 新插入資料的 ID
+	_, err = stmt.Exec("jhon", 18)
 	if err != nil {
-		fmt.Printf("get lastinsert ID failed, err:%v\n", err)
+		fmt.Printf("insert failed, err:%v\n", err)
 		return
 	}
-	fmt.Printf("insert success, the id is %d.\n", theID)
-}
-
-// 更新資料範例
-func updateRowDemo() {
-	sqlStr := "update user set age=? where id = ?"
-	ret, err := db.Exec(sqlStr, 35, 1)
-	if err != nil {
-		fmt.Printf("update failed, err:%v\n", err)
-		return
-	}
-	var n int64
-	n, err = ret.RowsAffected() // 操作影響的行數
-	if err != nil {
-		fmt.Printf("get RowsAffected failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("update success, affected rows: %d\n", n)
-}
-
-// 刪除資料範例
-func deleteRowDemo() {
-	sqlStr := "delete from user where id = ?"
-	ret, err := db.Exec(sqlStr, 3)
-	if err != nil {
-		fmt.Printf("delete failed, err:%v\n", err)
-		return
-	}
-	var n int64
-	n, err = ret.RowsAffected() // 操作影響的行數
-	if err != nil {
-		fmt.Printf("get RowsAffected failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("delete success, affected rows: %d\n", n)
+	fmt.Println("insert success.")
 }
 
 func main() {
@@ -125,9 +84,6 @@ func main() {
 	// 做完錯誤檢查之後，確保 db 不為 nil，才能執行 defer db.Close()
 	defer db.Close() // 注意这行程式碼要寫在上面 err 判断的下面
 	fmt.Println("connect to db success")
-	// queryRowDemi()
-	// insertRowDemo()
-	// updateRowDemo()
-	// deleteRowDemo()
-	queryMultiRowDemo()
+	prepareInsertDemo()
+	prepareQueryDemo()
 }
