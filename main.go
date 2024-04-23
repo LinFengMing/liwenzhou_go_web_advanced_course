@@ -1,8 +1,9 @@
 package main
 
 import (
-	"errors"
+	"database/sql/driver"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 
@@ -17,76 +18,24 @@ type user struct {
 	Name string `db:"name"`
 }
 
-// 查詢單筆資料範例
-func queryRowDemo() {
-	sqlStr := "select id, name, age from user where id=?"
-	var u user
-	err := db.Get(&u, sqlStr, 1)
-	if err != nil {
-		fmt.Printf("get failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("id:%d name:%s age:%d\n", u.ID, u.Name, u.Age)
+func (u user) Value() (driver.Value, error) {
+	return []driver.Value{u.Name, u.Age}, nil
 }
 
-// 查詢多筆資料範例
-func queryMultiRowDemo() {
-	sqlStr := "select id, name, age from user where id > ?"
-	var users []user
-	err := db.Select(&users, sqlStr, 0)
-	if err != nil {
-		fmt.Printf("select failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("users:%#v\n", users)
+func BatchInsertUsers(users []interface{}) error {
+	query, args, _ := sqlx.In(
+		"INSERT INTO user (name, age) VALUES (?), (?), (?)",
+		users...,
+	)
+	fmt.Println(query)
+	fmt.Println(args)
+	_, err := db.Exec(query, args...)
+	return err
 }
 
-// 新增資料範例
-func insertRowDemo() {
-	sqlStr := "insert into user(name, age) values(?, ?)"
-	ret, err := db.Exec(sqlStr, "alex", 38)
-	if err != nil {
-		fmt.Printf("insert failed, err:%v\n", err)
-		return
-	}
-	theID, err := ret.LastInsertId() // 新插入數據的ID
-	if err != nil {
-		fmt.Printf("get lastinsert ID failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("insert success, the id is %d.\n", theID)
-}
-
-// 更新資料範例
-func updateRowDemo() {
-	sqlStr := "update user set age=? where id = ?"
-	ret, err := db.Exec(sqlStr, 39, 6)
-	if err != nil {
-		fmt.Printf("update failed, err:%v\n", err)
-		return
-	}
-	n, err := ret.RowsAffected() // 操作影響的行數
-	if err != nil {
-		fmt.Printf("get RowsAffected failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("update success, affected rows:%d\n", n)
-}
-
-// 刪除資料範例
-func deleteRowDemo() {
-	sqlStr := "delete from user where id = ?"
-	ret, err := db.Exec(sqlStr, 6)
-	if err != nil {
-		fmt.Printf("delete failed, err:%v\n", err)
-		return
-	}
-	n, err := ret.RowsAffected() // 操作影響的行數
-	if err != nil {
-		fmt.Printf("get RowsAffected failed, err:%v\n", err)
-		return
-	}
-	fmt.Printf("delete success, affected rows:%d\n", n)
+func BatchInsertUsers2(users []user) error {
+	_, err := db.NamedExec("INSERT INTO user (name, age) VALUES (:name, :age)", users)
+	return err
 }
 
 func initMySQL() (err error) {
@@ -101,91 +50,28 @@ func initMySQL() (err error) {
 	return
 }
 
-func insertUserDemo() (err error) {
-	_, err = db.NamedExec(`insert into user(name, age) values(:name, :age)`,
-		map[string]interface{}{
-			"name": "johnny",
-			"age":  28,
-		})
+func QueryByIDs(ids []int) (users []user, err error) {
+	query, args, err := sqlx.In("SELECT id, name, age FROM user WHERE id IN (?)", ids)
+	if err != nil {
+		return
+	}
+	query = db.Rebind(query)
+	err = db.Select(&users, query, args...)
 	return
 }
 
-func namedQueryDemo() {
-	sqlStr := "select id, name, age from user where name=:name"
-	// 使用 map 參數
-	rows, err := db.NamedQuery(sqlStr, map[string]interface{}{"name": "johnny"})
+func QueryAndOrderByIDs(ids []int) (users []user, err error) {
+	strIDs := make([]string, 0, len(ids))
+	for _, id := range ids {
+		strIDs = append(strIDs, fmt.Sprintf("%d", id))
+	}
+	query, args, err := sqlx.In("SELECT id, name, age FROM user WHERE id IN (?) ORDER BY FIND_IN_SET(id, ?)", ids, strings.Join(strIDs, ","))
 	if err != nil {
-		fmt.Printf("named query failed, err:%v\n", err)
 		return
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var u user
-		err := rows.StructScan(&u)
-		if err != nil {
-			fmt.Printf("scan failed, err:%v\n", err)
-			continue
-		}
-		fmt.Printf("user:%#v\n", u)
-	}
-	u := user{
-		Name: "johnny",
-	}
-	// 使用結構體參數
-	rows, err = db.NamedQuery(sqlStr, u)
-	if err != nil {
-		fmt.Printf("named query failed, err:%v\n", err)
-		return
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var u user
-		err := rows.StructScan(&u)
-		if err != nil {
-			fmt.Printf("scan failed, err:%v\n", err)
-			continue
-		}
-		fmt.Printf("user:%#v\n", u)
-	}
-}
-
-func transactionDemo() (err error) {
-	tx, err := db.Beginx()
-	if err != nil {
-		fmt.Printf("begin trans failed, err:%v\n", err)
-		return err
-	}
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		} else if err != nil {
-			fmt.Println("rollback")
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-			fmt.Println("commit")
-		}
-	}()
-	sqlStr1 := "update user set age=30 where id=?"
-	rs, err := tx.Exec(sqlStr1, 3)
-	if err != nil {
-		return err
-	}
-	n, err := rs.RowsAffected()
-	if n != 1 {
-		return errors.New("exec sql1 failed")
-	}
-	sqlStr2 := "update user set age=50 where id=?"
-	rs, err = tx.Exec(sqlStr2, 5)
-	if err != nil {
-		return err
-	}
-	n, err = rs.RowsAffected()
-	if n != 1 {
-		return errors.New("exec sql2 failed")
-	}
-	return nil
+	query = db.Rebind(query)
+	err = db.Select(&users, query, args...)
+	return
 }
 
 func main() {
@@ -194,5 +80,25 @@ func main() {
 		return
 	}
 	fmt.Println("connect to db success")
-	transactionDemo()
+	// u1 := user{Name: "terry", Age: 18}
+	// u2 := user{Name: "tom", Age: 20}
+	// u3 := user{Name: "jerry", Age: 22}
+	// users := []interface{}{u1, u2, u3}
+	// BatchInsertUsers(users)
+	users, err := QueryByIDs([]int{4, 5, 6})
+	if err != nil {
+		fmt.Printf("QueryByIDs failed, err:%v\n", err)
+		return
+	}
+	for _, user := range users {
+		fmt.Printf("user:%#v\n", user)
+	}
+	users, err = QueryAndOrderByIDs([]int{7, 8, 4, 2})
+	if err != nil {
+		fmt.Printf("QueryByIDs failed, err:%v\n", err)
+		return
+	}
+	for _, user := range users {
+		fmt.Printf("user:%#v\n", user)
+	}
 }
