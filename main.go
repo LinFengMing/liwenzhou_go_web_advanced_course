@@ -1,51 +1,36 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"net/http"
 
-	"github.com/go-redis/redis"
+	"go.uber.org/zap"
 )
 
-var rdb *redis.Client
+var logger *zap.Logger
 
-func initClient() (err error) {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-		PoolSize: 100,
-	})
-	_, err = rdb.Ping().Result()
-	return err
+func InitLogger() {
+	logger, _ = zap.NewProduction()
 }
 
-func watchDemo() {
-	key := "watch_count"
-	err := rdb.Watch(func(tx *redis.Tx) error {
-		n, err := tx.Get(key).Int()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		_, err = tx.TxPipelined(func(pipe redis.Pipeliner) error {
-			time.Sleep(10 * time.Second)
-			pipe.Set(key, n+1, 0)
-			return nil
-		})
-		return err
-	}, key)
+func simpleHttpGet(url string) {
+	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Printf("tx exec failed, err:%v\n", err)
-		return
+		logger.Error("Error fetching URL",
+			zap.String("url", url),
+			zap.Error(err),
+		)
+	} else {
+		logger.Info("Successfully fetched URL",
+			zap.String("url", url),
+			zap.Int("status", resp.StatusCode),
+		)
+		resp.Body.Close()
 	}
-	fmt.Println("tx exec success")
 }
 
 func main() {
-	if err := initClient(); err != nil {
-		fmt.Printf("init redis client failed, err:%v\n", err)
-	}
-	fmt.Println("init redis success")
-	defer rdb.Close()
-	watchDemo()
+	InitLogger()
+	defer logger.Sync()
+	simpleHttpGet("www.google.com")
+	simpleHttpGet("http://www.google.com")
 }
