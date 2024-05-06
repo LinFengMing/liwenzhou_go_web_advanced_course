@@ -1,6 +1,0 @@
-port: 8081
-version: "v1.0.0"
-mysql:
-  host: "127.0.0.1"
-  port: 3306
-  dbname: "liwenzhou_go_web_advanced_course"
