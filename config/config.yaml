@@ -1,7 +1,9 @@
-app:
-  name: "liwenzhou_go_web_advanced_course"
-  mode: "dev"
-  port: 8080
+name: "liwenzhou_go_web_advanced_course"
+mode: "dev"
+port: 8080
+version: "v1.0.0"
+start_time: "2024-05-01"
+machine_id: 1
 log:
   level: "debug"
   filename: "web_app.log"

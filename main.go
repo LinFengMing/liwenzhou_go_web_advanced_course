@@ -6,6 +6,7 @@ import (
 	"gin_demo/dao/mysql"
 	"gin_demo/dao/redis"
 	"gin_demo/logger"
+	"gin_demo/pkg/snowflake"
 	"gin_demo/routes"
 	"gin_demo/settings"
 	"log"
@@ -44,6 +45,11 @@ func main() {
 		return
 	}
 	defer redis.Close()
+	// 雪花算法 ID
+	if err := snowflake.Init(settings.Conf.StartTime, settings.Conf.MachineID); err != nil {
+		fmt.Printf("Init snowflake failed, err:%v\n", err)
+		return
+	}
 	// 5. 註冊路由
 	router := routes.Setup()
 	// 6. 啟動服務(優雅關機)
