@@ -54,7 +54,7 @@ func main() {
 	router := routes.Setup()
 	// 6. 啟動服務(優雅關機)
 	ser := &http.Server{
-		Addr:    fmt.Sprintf(":%d", viper.GetInt("app.port")),
+		Addr:    fmt.Sprintf(":%d", viper.GetInt("port")),
 		Handler: router,
 	}
 	go func() {
