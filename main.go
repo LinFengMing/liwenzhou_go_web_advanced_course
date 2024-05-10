@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"gin_demo/controllers"
 	"gin_demo/dao/mysql"
 	"gin_demo/dao/redis"
 	"gin_demo/logger"
@@ -21,25 +22,25 @@ import (
 )
 
 func main() {
-	// 1. 載入設定
+	// 載入設定
 	if err := settings.Init(); err != nil {
 		fmt.Printf("Init settings failed, err:%v\n", err)
 		return
 	}
-	// 2. 初始化日誌
+	// 初始化日誌
 	if err := logger.Init(settings.Conf.LogConfig); err != nil {
 		fmt.Printf("Init logger failed, err:%v\n", err)
 		return
 	}
 	defer zap.L().Sync()
 	zap.L().Debug("logger init success")
-	// 3. 初始化 MySQL 連接
+	// 初始化 MySQL 連接
 	if err := mysql.Init(settings.Conf.MySQLConfig); err != nil {
 		fmt.Printf("Init mysql failed, err:%v\n", err)
 		return
 	}
 	defer mysql.Close()
-	// 4. 初始化 Redis 連接
+	// 初始化 Redis 連接
 	if err := redis.Init(settings.Conf.RedisConfig); err != nil {
 		fmt.Printf("Init redis failed, err:%v\n", err)
 		return
@@ -50,9 +51,14 @@ func main() {
 		fmt.Printf("Init snowflake failed, err:%v\n", err)
 		return
 	}
-	// 5. 註冊路由
+	// 初始化 gin 內建驗證使用的翻譯器
+	if err := controllers.InitTrans("zh"); err != nil {
+		fmt.Printf("Init validator trans failed, err:%v\n", err)
+		return
+	}
+	// 註冊路由
 	router := routes.Setup()
-	// 6. 啟動服務(優雅關機)
+	// 啟動服務(優雅關機)
 	ser := &http.Server{
 		Addr:    fmt.Sprintf(":%d", viper.GetInt("port")),
 		Handler: router,

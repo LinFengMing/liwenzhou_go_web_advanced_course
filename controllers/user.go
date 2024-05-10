@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -15,16 +16,16 @@ func SignUpHandler(c *gin.Context) {
 	p := new(models.ParamSigUp)
 	if err := c.ShouldBindJSON(p); err != nil {
 		zap.L().Error("SignUp with invalid param", zap.Error(err))
+		// 判斷 err 是不是 validator.ValidationErrors 類型
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": err.Error(),
-		})
-		return
-	}
-	// 參數規則驗證
-	if len(p.Username) == 0 || len(p.Password) == 0 || p.Password != p.RePassword {
-		zap.L().Error("SignUp with invalid param")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": "請求參數有誤",
+			"msg": removeTopStruct(errs.Translate(trans)),
 		})
 		return
 	}
