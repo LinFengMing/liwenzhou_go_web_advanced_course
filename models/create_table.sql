@@ -1,6 +1,6 @@
 CREATE TABLE `user` (
-    `id` bigint(20) NOT NULL,
-    `uswe_id` bigint(20) NOT NULL,
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `user_id` bigint(20) NOT NULL,
     `username` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
     `password` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
     `email` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -9,5 +9,5 @@ CREATE TABLE `user` (
     `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_username` (`username`) USING BTREE,
-    UNIQUE KEY `idx_user_id` (`uswe_id`) USING BTREE
+    UNIQUE KEY `idx_user_id` (`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
