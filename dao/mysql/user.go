@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -29,6 +30,24 @@ func InserUser(user *models.User) (err error) {
 	fmt.Println(user.Password)
 	sqlStr := `insert into user(user_id, username, password) values(?, ?, ?)`
 	_, err = db.Exec(sqlStr, user.UserID, user.Username, user.Password)
+	return
+}
+
+func Login(user *models.User) (err error) {
+	oPassword := user.Password
+	sqlStr := `select user_id, username, password from user where username = ?`
+	err = db.Get(user, sqlStr, user.Username)
+	if err == sql.ErrNoRows {
+		return errors.New("用戶不存在")
+	}
+	if err != nil {
+		return err
+	}
+	// 判斷密碼是否正確
+	password := encryptPassword(oPassword)
+	if password != user.Password {
+		return errors.New("密碼錯誤")
+	}
 	return
 }
 

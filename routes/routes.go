@@ -15,6 +15,7 @@ func Setup(mode string) *gin.Engine {
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	r.POST("/signup", controllers.SignUpHandler)
+	r.POST("/login", controllers.LoginHandler)
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome Gin Server")
 	})
