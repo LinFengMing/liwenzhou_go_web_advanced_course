@@ -11,6 +11,12 @@ import (
 
 const secret = "gin_demo"
 
+var (
+	ErroeUserExist       = errors.New("用戶已存在")
+	ErroeUserNotExist    = errors.New("用戶不存在")
+	ErroeInvalidPassword = errors.New("用戶名或密碼錯誤")
+)
+
 func CheckUserExist(username string) error {
 	sqlStr := `select count(user_id) from user where username = ?`
 	var count int
@@ -18,7 +24,7 @@ func CheckUserExist(username string) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New("用戶已存在")
+		return ErroeUserExist
 	}
 	return nil
 }
@@ -38,7 +44,7 @@ func Login(user *models.User) (err error) {
 	sqlStr := `select user_id, username, password from user where username = ?`
 	err = db.Get(user, sqlStr, user.Username)
 	if err == sql.ErrNoRows {
-		return errors.New("用戶不存在")
+		return ErroeUserNotExist
 	}
 	if err != nil {
 		return err
@@ -46,7 +52,7 @@ func Login(user *models.User) (err error) {
 	// 判斷密碼是否正確
 	password := encryptPassword(oPassword)
 	if password != user.Password {
-		return errors.New("密碼錯誤")
+		return ErroeInvalidPassword
 	}
 	return
 }
