@@ -1,14 +1,13 @@
 package middlewares
 
 import (
-	"gin_demo/controllers"
 	"gin_demo/pkg/jwt"
 	"strings"
 
+	"gin_demo/controllers"
+
 	"github.com/gin-gonic/gin"
 )
-
-const CtxtUserIDKey = "userID"
 
 func JWTAuthMiddleware() func(c *gin.Context) {
 	return func(c *gin.Context) {
@@ -36,7 +35,7 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 			return
 		}
 		// 將當前用戶的 userID 資訊保存到請求的上下文 c 上
-		c.Set(CtxtUserIDKey, mc.UserID)
+		c.Set(controllers.CtxtUserIDKey, mc.UserID)
 		c.Next() // 後續的處理函式可以用 c.Get(CtxtUserIDKey) 來取得當前請求的用戶資訊
 	}
 }
