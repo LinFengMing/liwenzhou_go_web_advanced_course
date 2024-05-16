@@ -4,6 +4,8 @@ port: 8080
 version: "v1.0.0"
 start_time: "2024-05-01"
 machine_id: 1
+auth:
+  jwt_expire: 2
 log:
   level: "debug"
   filename: "web_app.log"
