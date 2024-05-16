@@ -15,11 +15,13 @@ func Setup(mode string) *gin.Engine {
 	}
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
-	r.POST("/signup", controllers.SignUpHandler)
-	r.POST("/login", controllers.LoginHandler)
-	r.GET("/pong", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
+	v1 := r.Group("/api/v1")
+	v1.POST("/signup", controllers.SignUpHandler)
+	v1.POST("/login", controllers.LoginHandler)
+	v1.Use(middlewares.JWTAuthMiddleware())
+	{
+		v1.GET("/community", controllers.CommunityHundler)
+	}
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"msg": "404",
