@@ -17,3 +17,14 @@ func GetCommunityList() (communityList []*models.Community, err error) {
 	}
 	return
 }
+
+func GetCommunityDetailByID(id int64) (communityDetail *models.CommunityDetail, err error) {
+	communityDetail = new(models.CommunityDetail)
+	sqlStr := `select community_id, community_name, introduction, create_time from community where community_id = ?`
+	if err := db.Get(communityDetail, sqlStr, id); err != nil {
+		if err == sql.ErrNoRows {
+			err = ErrorInvalidID
+		}
+	}
+	return communityDetail, err
+}
