@@ -22,6 +22,7 @@ func Setup(mode string) *gin.Engine {
 	{
 		v1.GET("/community", controllers.CommunityHundler)
 		v1.GET("/community/:id", controllers.CommunityDetailHundler)
+		v1.POST("/post", controllers.CreatePostHandler)
 	}
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
