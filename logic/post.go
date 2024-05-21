@@ -12,3 +12,7 @@ func CreatePost(p *models.Post) (err error) {
 	// 2. 新增帖子
 	return mysql.CreatePost(p)
 }
+
+func GetPostById(pid int64) (data *models.Post, err error) {
+	return mysql.GetPostById(pid)
+}

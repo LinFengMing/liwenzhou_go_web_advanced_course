@@ -7,3 +7,10 @@ func CreatePost(p *models.Post) (err error) {
 	_, err = db.Exec(sqlStr, p.ID, p.AuthorID, p.CommunityID, p.Title, p.Content)
 	return
 }
+
+func GetPostById(pid int64) (data *models.Post, err error) {
+	data = new(models.Post)
+	sqlStr := `select post_id, author_id, community_id, title, content, create_time from post where post_id = ?`
+	err = db.Get(data, sqlStr, pid)
+	return
+}
