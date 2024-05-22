@@ -53,3 +53,16 @@ func GetPostDetailHandler(c *gin.Context) {
 	// 3. 回傳 Response
 	ResponseSuccess(c, data)
 }
+
+func GetPostListHandler(c *gin.Context) {
+	page, size := getPageInfo(c)
+	// 2. 查詢帖子列表
+	data, err := logic.GetPostList(page, size)
+	if err != nil {
+		zap.L().Error("logic.GetPostList() failed", zap.Error(err))
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	// 3. 回傳 Response
+	ResponseSuccess(c, data)
+}

@@ -37,12 +37,13 @@ CREATE TABLE `post` (
     `post_id` bigint(20) unsigned NOT NULL COMMENT '帖子ID',
     `title` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '標題',
     `content` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '內容',
-    `author_id` bigint(20) unsigned NOT NULL COMMENT '作者的用戶ID',
-    `community_id` bigint(20) unsigned NOT NULL COMMENT '帖子所屬社區ID',
+    `author_id` bigint(20) NOT NULL COMMENT '作者的用戶ID',
+    `community_id` bigint(20) NOT NULL COMMENT '帖子所屬社區ID',
     `status` tinyint(4) NULL DEFAULT '1' COMMENT '帖子狀態，0-已刪除，1-正常',
     `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `idx_author_id` (`author_id`) USING BTREE,
-    UNIQUE KEY `idx_community_id` (`community_id`) USING BTREE
+    UNIQUE KEY `idx_post_id` (`post_id`) USING BTREE,
+    KEY `idx_author_id` (`author_id`) USING BTREE,
+    KEY `idx_community_id` (`community_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
