@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"bluebell/dao/mysql"
+	"bluebell/logic"
+	"bluebell/models"
 	"errors"
 	"fmt"
-	"gin_demo/dao/mysql"
-	"gin_demo/logic"
-	"gin_demo/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"

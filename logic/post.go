@@ -1,9 +1,9 @@
 package logic
 
 import (
-	"gin_demo/dao/mysql"
-	"gin_demo/models"
-	"gin_demo/pkg/snowflake"
+	"bluebell/dao/mysql"
+	"bluebell/models"
+	"bluebell/pkg/snowflake"
 
 	"go.uber.org/zap"
 )

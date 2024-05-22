@@ -1,6 +1,6 @@
 package mysql
 
-import "gin_demo/models"
+import "bluebell/models"
 
 func CreatePost(p *models.Post) (err error) {
 	sqlStr := `insert into post(post_id, author_id, community_id, title, content) values(?,?,?,?,?)`

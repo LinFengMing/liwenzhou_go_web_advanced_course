@@ -1,15 +1,15 @@
 package main
 
 import (
+	"bluebell/controllers"
+	"bluebell/dao/mysql"
+	"bluebell/dao/redis"
+	"bluebell/logger"
+	"bluebell/pkg/snowflake"
+	"bluebell/routes"
+	"bluebell/settings"
 	"context"
 	"fmt"
-	"gin_demo/controllers"
-	"gin_demo/dao/mysql"
-	"gin_demo/dao/redis"
-	"gin_demo/logger"
-	"gin_demo/pkg/snowflake"
-	"gin_demo/routes"
-	"gin_demo/settings"
 	"log"
 	"net/http"
 	"os"

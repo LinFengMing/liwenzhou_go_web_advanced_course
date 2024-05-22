@@ -1,10 +1,10 @@
 package middlewares
 
 import (
-	"gin_demo/pkg/jwt"
+	"bluebell/pkg/jwt"
 	"strings"
 
-	"gin_demo/controllers"
+	"bluebell/controllers"
 
 	"github.com/gin-gonic/gin"
 )

@@ -22,7 +22,7 @@ func GenToken(userID int64, username string) (string, error) {
 		username,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Duration(viper.GetInt("auth.jwt_expire")) * time.Hour).Unix(),
-			Issuer:    "gin_demo",
+			Issuer:    "bluebell",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)

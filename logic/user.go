@@ -1,10 +1,10 @@
 package logic
 
 import (
-	"gin_demo/dao/mysql"
-	"gin_demo/models"
-	"gin_demo/pkg/jwt"
-	"gin_demo/pkg/snowflake"
+	"bluebell/dao/mysql"
+	"bluebell/models"
+	"bluebell/pkg/jwt"
+	"bluebell/pkg/snowflake"
 )
 
 func SignUp(p *models.ParamSigUp) (err error) {

@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"gin_demo/controllers"
-	"gin_demo/logger"
-	"gin_demo/middlewares"
+	"bluebell/controllers"
+	"bluebell/logger"
+	"bluebell/middlewares"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

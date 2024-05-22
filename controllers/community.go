@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"gin_demo/logic"
+	"bluebell/logic"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"bluebell/models"
 	"fmt"
-	"gin_demo/models"
 	"reflect"
 	"strings"
 

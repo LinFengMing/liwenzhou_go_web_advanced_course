@@ -1,14 +1,14 @@
 package mysql
 
 import (
+	"bluebell/models"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"gin_demo/models"
 )
 
-const secret = "gin_demo"
+const secret = "bluebell"
 
 func CheckUserExist(username string) error {
 	sqlStr := `select count(user_id) from user where username = ?`

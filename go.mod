@@ -1,4 +1,4 @@
-module gin_demo
+module bluebell
 
 go 1.22.2
 

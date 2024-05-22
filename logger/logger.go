@@ -1,8 +1,8 @@
 package logger
 
 import (
+	"bluebell/settings"
 	"fmt"
-	"gin_demo/settings"
 	"net"
 	"net/http"
 	"net/http/httputil"

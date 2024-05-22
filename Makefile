@@ -1,5 +1,5 @@
 .PHONY: all build run gotool clean help
-BINARY="gin_demo"
+BINARY="bluebell"
 all: gotool build
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${BINARY} -v

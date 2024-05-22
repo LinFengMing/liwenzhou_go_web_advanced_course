@@ -17,7 +17,7 @@ mysql:
   port: 3306
   user: "root"
   password: "1qaz2wsx3edc"
-  dbname: "liwenzhou_go_web_advanced_course"
+  dbname: "bluebell"
   max_open_conns: 200
   max_idle_conns: 50
 redis:
