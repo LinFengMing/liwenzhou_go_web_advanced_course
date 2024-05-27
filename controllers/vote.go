@@ -21,6 +21,12 @@ func PostVoteHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, CodeInvalidParam, errData)
 		return
 	}
-	logic.PostVote()
+	userID, err := getCurrentUserID(c)
+	if err != nil {
+		ResponseError(c, CodeNeedLogin)
+		return
+	}
+	// 2. 業務處理
+	logic.VoteForPost(userID, p)
 	ResponseSuccess(c, nil)
 }
